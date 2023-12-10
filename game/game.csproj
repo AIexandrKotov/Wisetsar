@@ -33,16 +33,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="KCore, Version=0.1.0.500, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\KCore.dll</HintPath>
+    <Reference Include="KCore, Version=0.1.0.542, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KCore.0.1.0\lib\net\KCore.dll</HintPath>
     </Reference>
-    <Reference Include="SLThree, Version=0.5.1.1636, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\SLThree.dll</HintPath>
+    <Reference Include="Pegasus.Common, Version=4.1.0.0, Culture=neutral, PublicKeyToken=28c69b6c6d100f4a, processorArchitecture=MSIL">
+      <HintPath>..\packages\slthree.0.5.2.1\lib\net\Pegasus.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SLThree, Version=0.5.2.1645, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\slthree.0.5.2.1\lib\net\SLThree.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="main\Player.cs" />
@@ -57,6 +59,7 @@
     <None Include="App.config" />
     <EmbeddedResource Include="data\quests.slt" />
     <EmbeddedResource Include="data\init.slt" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -12,10 +12,42 @@ namespace Wisetsar
 {
     public class Scores : Form
     {
+        public const string ScoresPath = "scores.dat";
+
         public Trigger CloseTrigger;
+        public Trigger DeleteTrigger;
+        public TriggerRedrawer EndsRedrawer;
+
         public Player[] ScoreList;
 
         public ListBox List;
+
+        public void DeleteAt(int index)
+        {
+            ScoreList = ScoreList.Where((x, i) => i != index).ToArray();
+            using (var stream = File.Create(ScoresPath))
+            {
+                using (var bw = new BinaryWriter(stream))
+                {
+                    foreach (var x in ScoreList.Reverse())
+                        x.Write(bw);
+                }
+            }
+            if (ScoreList.Length > 0)
+            {
+                if (List.Position > 0) List.Position -= 1;
+                if (List.UpPosition > 0) List.UpPosition -= 1;
+            }
+            UpdateListChilds();
+            List.Resize();
+            List.Redraw();
+            EndsRedrawer.Do();
+        }
+
+        public void UpdateListChilds()
+        {
+            List.Childs = ScoreList.Select(x => new ListBox.ListItem(new TextWidget(GetString(x), alignment: Alignment.LeftWidth | Alignment.UpHeight, fillHeight: false))).ToList();
+        }
 
         public static string GetString(Player player)
         {
@@ -32,9 +64,9 @@ namespace Wisetsar
 
         public Scores()
         {
-            if (File.Exists("scores.dat"))
+            if (File.Exists(ScoresPath))
             {
-                using (var stream = File.OpenRead("scores.dat"))
+                using (var stream = File.OpenRead(ScoresPath))
                 {
                     using (var br = new BinaryReader(stream))
                     {
@@ -46,6 +78,8 @@ namespace Wisetsar
             else ScoreList = new Player[0];
 
             Bind(CloseTrigger = new Trigger(this, form => form.Close()));
+            Bind(DeleteTrigger = new Trigger(this, form => (form as Scores).DeleteAt((form as Scores).List.Position)));
+            Bind(EndsRedrawer = new TriggerRedrawer(this, form => (form as Scores).RedrawEnds()));
 
             List = new ListBox(selectLocation: ListBox.Location.Left);
             List.Container = new DynamicContainer()
@@ -56,7 +90,7 @@ namespace Wisetsar
                 GetHeight = () => Terminal.FixedWindowHeight - 2
             };
             List.SelectingPadding = (1, 0);
-            List.Childs = ScoreList.Select(x => new ListBox.ListItem(new TextWidget(GetString(x), alignment: Alignment.LeftWidth | Alignment.UpHeight, fillHeight: false))).ToList();
+            UpdateListChilds();
 
             Root.AddWidget(List);
 
@@ -65,7 +99,7 @@ namespace Wisetsar
             ActiveWidget = List;
         }
 
-        protected override void OnAllRedraw()
+        public void RedrawEnds()
         {
             var (left, top) = (Terminal.FixedWindowWidth / 2 + 10, 1);
             Terminal.Set(left, top);
@@ -75,17 +109,24 @@ namespace Wisetsar
             {
                 Terminal.Set(left, top + 1 + i);
                 var text = deaths[i].Value;
-                var wrap = ScoreList.Any(x => x.CurrentStage == deaths[i].Key) 
+                var wrap = ScoreList.Any(x => x.CurrentStage == deaths[i].Key)
                     ? (text == "Победа" ? $"%=>Magenta%{text}%=>reset%" : $"%=>Red%{text}%=>reset%")
-                    : $"%=>Gray%{text}%=>reset%";
+                    : $"%=>Gray%{new string('?', text.Length)}%=>reset%";
                 wrap.PrintSuperText(null, TextAlignment.Center);
             }
+        }
+
+        protected override void OnAllRedraw()
+        {
+            Terminal.Set(Terminal.FixedWindowWidth / 2 + 10, Terminal.FixedWindowHeight - 3);
+            $"%=>Gray back% Delete %=>reset back% Удалить рекорд".PrintSuperText(null, TextAlignment.Center);
         }
 
         protected override void OnKeyDown(byte key)
         {
             base.OnKeyDown(key);
             if (key == Key.Escape || key == Key.Tab || key == Key.Backspace) CloseTrigger.Do();
+            if (key == Key.Delete) DeleteTrigger.Do();
         }
     }
 }

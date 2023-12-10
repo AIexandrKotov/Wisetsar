@@ -24,7 +24,7 @@ namespace Wisetsar
 
         public static void AddScore(Player player)
         {
-            using (var stream = File.OpenWrite("scores.dat"))
+            using (var stream = File.OpenWrite(Scores.ScoresPath))
             {
                 using (var bw = new BinaryWriter(stream))
                 {
